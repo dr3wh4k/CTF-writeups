@@ -1,4 +1,3 @@
-[pickle-rick-writeup.md](https://github.com/user-attachments/files/28322734/pickle-rick-writeup.md)
 # 🥒 Pickle Rick — TryHackMe Writeup
 
 > **Plataforma:** TryHackMe  
