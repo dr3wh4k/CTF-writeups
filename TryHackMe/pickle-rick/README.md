@@ -1,5 +1,5 @@
 # 🥒 Pickle Rick — TryHackMe Writeup
-<img width="1672" height="941" alt="ChatGPT Image May 28, 2026, 08_59_30 AM" src="https://github.com/user-attachments/assets/6022eefa-2c34-4b5b-b48b-d3e975175762" />
+<img width="1472" height="941" alt="ChatGPT Image May 28, 2026, 08_59_30 AM" src="https://github.com/user-attachments/assets/6022eefa-2c34-4b5b-b48b-d3e975175762" />
 
 > **Plataforma:** TryHackMe  
 > **Sala:** [Pickle Rick](https://tryhackme.com/room/picklerick)  
