@@ -41,7 +41,7 @@ CTF-Writeups/
 
 | # | Máquina | Dificultad | Categoría | Técnicas | Writeup |
 |---|---------|------------|-----------|----------|---------|
-| 01 | 🖥️ CAP | 🟢 Fácil | Web / Linux | IDOR, PCAP Analysis, Linux Capabilities | [Ver writeup]([HackTheBox/CAP/README.md](https://github.com/dr3wh4k/CTF-writeups/tree/main/HackTheBox/CAP)) |
+| 01 | 🖥️ CAP | 🟢 Fácil | Web / Linux | IDOR, PCAP Analysis, Linux Capabilities |[Ver writeup](https://github.com/dr3wh4k/CTF-writeups/tree/main/HackTheBox/CAP) |
 
 ---
 
