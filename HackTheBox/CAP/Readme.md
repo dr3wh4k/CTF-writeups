@@ -1,7 +1,8 @@
 
 # 🔒 CAP — HackTheBox Writeup
 
-![CAP](https://labs.hackthebox.com/storage/avatars/953b6e6e8dad7edbb80ebafec99bc143.png)
+<img width="1672" height="941" alt="ChatGPT Image May 30, 2026, 09_26_36 AM" src="https://github.com/user-attachments/assets/1271a4c0-d335-4f5b-b022-8984728cdc35" />
+
 
 ---
 
