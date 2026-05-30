@@ -62,10 +62,10 @@ CTF-Writeups/
 
 ## 📊 Estadísticas
 
-![Fácil](https://img.shields.io/badge/Fácil-1-brightgreen?style=flat-square)
+![Fácil](https://img.shields.io/badge/Fácil-2-brightgreen?style=flat-square)
 ![Media](https://img.shields.io/badge/Media-0-orange?style=flat-square)
 ![Difícil](https://img.shields.io/badge/Difícil-0-red?style=flat-square)
-![Total](https://img.shields.io/badge/Total-1-blue?style=flat-square)
+![Total](https://img.shields.io/badge/Total-2-blue?style=flat-square)
 
 ---
 
