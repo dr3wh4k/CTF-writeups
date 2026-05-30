@@ -76,5 +76,5 @@ Todos los writeups recogidos en este repositorio corresponden a máquinas en ent
 ---
 
 <div align="center">
-  <sub>Hecho con ☕ y muchas horas frente al terminal</sub>
+  <sub>dr3wh4k :) </sub>
 </div>
