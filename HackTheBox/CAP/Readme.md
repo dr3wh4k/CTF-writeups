@@ -14,7 +14,6 @@
 | **Nombre** | CAP |
 | **OS** | Linux |
 | **Dificultad** | Easy |
-| **IP** | 10.10.10.245 |
 
 ---
 
