@@ -5,7 +5,7 @@
 
 [![TryHackMe](https://img.shields.io/badge/TryHackMe-Profile-red?style=for-the-badge&logo=tryhackme&logoColor=white)](https://tryhackme.com)
 [![GitHub](https://img.shields.io/badge/GitHub-CTF--Writeups-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
-![Writeups](https://img.shields.io/badge/Writeups-1-brightgreen?style=for-the-badge)
+![Writeups](https://img.shields.io/badge/Writeups-2-brightgreen?style=for-the-badge)
 ![Plataformas](https://img.shields.io/badge/Plataformas-TryHackMe-blueviolet?style=for-the-badge)
 
 > Colección personal de writeups de máquinas CTF. Documentación detallada del proceso de reconocimiento, explotación y escalada de privilegios.
