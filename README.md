@@ -4,7 +4,7 @@
 # 🔐 CTF Writeups
 
 [![TryHackMe](https://img.shields.io/badge/TryHackMe-Profile-red?style=for-the-badge&logo=tryhackme&logoColor=white)](https://tryhackme.com)
-[![HackTheBox](https://img.shields.io/badge/HackTheBox-Profile-yellow?style=for-the-badge&logo=hackthebox&logoColor=white)](https://tryhackme.com)
+[![HackTheBox](https://img.shields.io/badge/HackTheBox-Profile-orange?style=for-the-badge&logo=hackthebox&logoColor=white)](https://hackthebox.com)
 [![GitHub](https://img.shields.io/badge/GitHub-CTF--Writeups-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
 ![Writeups](https://img.shields.io/badge/Writeups-2-brightgreen?style=for-the-badge)
 ![Plataformas](https://img.shields.io/badge/Plataformas-TryHackMe-blueviolet?style=for-the-badge)
