@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🔐 CTF Writeups
+#  CTF Writeups
 
 [![TryHackMe](https://img.shields.io/badge/TryHackMe-Profile-red?style=for-the-badge&logo=tryhackme&logoColor=white)](https://tryhackme.com)
 [![HackTheBox](https://img.shields.io/badge/HackTheBox-Profile-orange?style=for-the-badge&logo=hackthebox&logoColor=white)](https://hackthebox.com)
@@ -14,7 +14,7 @@
 
 ---
 
-## 📁 Estructura del repositorio
+##  Estructura del repositorio
 
 ```
 CTF-Writeups/
@@ -47,7 +47,7 @@ CTF-Writeups/
 
 ---
 
-## 🛠️ Herramientas habituales
+##  Herramientas habituales
 
 | Herramienta | Uso |
 |-------------|-----|
@@ -60,7 +60,7 @@ CTF-Writeups/
 
 ---
 
-## 📊 Estadísticas
+##  Estadísticas
 
 ![Fácil](https://img.shields.io/badge/Fácil-2-brightgreen?style=flat-square)
 ![Media](https://img.shields.io/badge/Media-0-orange?style=flat-square)
@@ -69,7 +69,7 @@ CTF-Writeups/
 
 ---
 
-## ⚠️ Aviso legal
+##  Aviso legal
 
 Todos los writeups recogidos en este repositorio corresponden a máquinas en entornos **controlados y autorizados** (TryHackMe, HackTheBox, etc.). El contenido es puramente **educativo**. Nunca apliques estas técnicas en sistemas sin autorización explícita.
 
