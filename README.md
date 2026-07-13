@@ -33,13 +33,13 @@ CTF-Writeups/
 
 ## 📋 Índice de máquinas
 
-## 🟢 TryHackMe
+## 🟣 TryHackMe
 
 | # | Máquina | Dificultad | Categoría | Técnicas | Writeup |
 |---|---------|------------|-----------|----------|---------|
 | 01 | 🥒 Pickle Rick | 🟢 Fácil | Web / Linux | RCE, Source Code Review, sudo privesc | [Ver writeup](TryHackMe/pickle-rick/README.md) |
 
-## 🟠 HackTheBox
+## 🟢 HackTheBox
 
 | # | Máquina | Dificultad | Categoría | Técnicas | Writeup |
 |---|---------|------------|-----------|----------|---------|
