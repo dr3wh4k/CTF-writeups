@@ -1,4 +1,5 @@
 # TryHackMe – Fool's Mate
+<img width="1672" height="941" alt="ChatGPT Image Sep 19, 2026, 07_16_30 PM" src="https://github.com/user-attachments/assets/5e95d876-5548-4daa-89fa-abad8d2fbcf9" />
 
 **Dificultad:** Fácil
 **Categoría:** Web Exploitation / Lógica del lado del cliente vs. servidor
