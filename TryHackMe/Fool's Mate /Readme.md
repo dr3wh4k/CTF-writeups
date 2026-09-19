@@ -1,4 +1,3 @@
-[fools-mate-writeup.md](https://github.com/user-attachments/files/32419400/fools-mate-writeup.md)
 # TryHackMe – Fool's Mate
 
 **Dificultad:** Fácil
