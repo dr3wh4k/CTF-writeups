@@ -1,4 +1,5 @@
 # DockerLabs: FirstHacking — Writeup
+<img width="760" height="339" alt="image" src="https://github.com/user-attachments/assets/6f94a0bd-a732-4e9e-a5d8-94541dd8e790" />
 
 ![Dificultad](https://img.shields.io/badge/Dificultad-Muy%20Fácil-brightgreen)
 ![Plataforma](https://img.shields.io/badge/Plataforma-DockerLabs-blue)
