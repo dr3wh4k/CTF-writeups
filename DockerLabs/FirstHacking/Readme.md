@@ -20,7 +20,7 @@ Writeup técnico de la máquina **FirstHacking** de [DockerLabs](https://dockerl
 
 ---
 
-## Paso 00: Despliegue del entorno
+## Paso Inicial: Despliegue del entorno
 
 ```bash
 unzip firsthacking.zip
