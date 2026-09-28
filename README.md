@@ -13,9 +13,6 @@
 </div>
 
 ---
-> Hola jeje
-
----
 
 
 ##  Estructura del repositorio
@@ -27,6 +24,9 @@ CTF-Writeups/
 │   └── pickle-rick/
 │       ├── README.md
 │       └── img/
+|   └── Fool's Mate/
+│       ├── README.md
+|    
 └── HackTheBox/
     └── CAP/
         ├── README.md
