@@ -25,7 +25,7 @@ CTF-Writeups/
 │       ├── README.md
 │       └── img/
 |   └── Fool's Mate/
-│       ├── README.md
+│       └── README.md
 |    
 └── HackTheBox/
     └── CAP/
