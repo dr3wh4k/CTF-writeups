@@ -139,4 +139,4 @@ Este laboratorio ilustra cómo una simple identificación de versión de servici
 
 ---
 
-*Writeup elaborado con fines educativos sobre la máquina FirstHacking de DockerLabs.                                       dr3wh4k' :)'*
+*Writeup elaborado con fines educativos sobre la máquina FirstHacking de DockerLabs.                                       dr3wh4k :)*
